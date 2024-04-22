@@ -10,6 +10,28 @@ class MalEnclosures {
   }
 }
 
+class MalQuote {
+  #form;
+  constructor(form) {
+    this.#form = form;
+  }
+
+  pr_str() {
+    return `(quote ${this.#form.pr_str()})`;
+  }
+}
+
+class MalUnquote {
+  #form;
+  constructor(form) {
+    this.#form = form;
+  }
+
+  pr_str() {
+    return `(quote ${this.#form.pr_str()})`;
+  }
+}
+
 class MalList extends MalEnclosures {
   constructor(args) {
     super(args);
@@ -57,4 +79,4 @@ class MalNil {
   }
 }
 
-module.exports = { MalList, MalNil, MalValue, MalVector, MalMap };
+module.exports = { MalList, MalNil, MalValue, MalVector, MalMap, MalQuote };

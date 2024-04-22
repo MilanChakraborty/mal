@@ -1,4 +1,11 @@
-const { MalList, MalNil, MalValue, MalVector, MalMap } = require("./types");
+const {
+  MalList,
+  MalNil,
+  MalValue,
+  MalVector,
+  MalMap,
+  MalQuote,
+} = require("./types");
 
 class Reader {
   #tokens;
@@ -47,6 +54,9 @@ const read_form = (reader) => {
       return new MalVector(read_seq(reader, "]"));
     case "{":
       return new MalMap(read_seq(reader, "}"));
+    case "'":
+      reader.next();
+      return new MalQuote(read_form(reader));
     default:
       return read_atom(reader);
   }
@@ -60,7 +70,6 @@ const tokenize = (str) => {
 
 const read_str = (str) => {
   const tokens = tokenize(str);
-  console.log(tokens)
   const reader = new Reader(tokens);
   return read_form(reader);
 };
