@@ -39,7 +39,6 @@ const read_atom = (reader) => {
 
 const read_form = (reader) => {
   const token = reader.peek();
-  let ast;
 
   switch (token) {
     case "(":

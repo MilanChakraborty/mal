@@ -5,7 +5,8 @@ class MalEnclosures {
   }
 
   pr_str(start, end) {
-    return `${start}${[...this.#args].map((t) => t.pr_str()).join(" ")}${end}`;
+    const elements = [...this.#args].map((t) => t.pr_str()).join(" ");
+    return `${start}${elements}${end}`;
   }
 }
 
