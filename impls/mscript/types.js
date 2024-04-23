@@ -1,23 +1,39 @@
 class MalEnclosures {
-  #args;
+  args;
   constructor(args) {
-    this.#args = args;
+    this.args = args;
+  }
+
+  isEmpty() {
+    return this.args.length === 0;
   }
 
   pr_str(start, end) {
-    const elements = [...this.#args].map((t) => t.pr_str()).join(" ");
+    const elements = [...this.args].map((t) => t.pr_str()).join(" ");
     return `${start}${elements}${end}`;
   }
 }
 
-class MalBool {
-  #value;
+class MalType {
+  value;
   constructor(value) {
-    this.#value = value;
+    this.value = value;
   }
 
   pr_str() {
-    return this.#value.toString();
+    return this.value.toString();
+  }
+}
+
+class MalSymbol extends MalType {
+  constructor(value) {
+    super(value);
+  }
+}
+
+class MalBool extends MalType {
+  constructor(value) {
+    super(value);
   }
 }
 
@@ -63,13 +79,13 @@ class MalMap extends MalEnclosures {
 }
 
 class MalValue {
-  #value;
+  value;
   constructor(value) {
-    this.#value = value;
+    this.value = +value;
   }
 
   pr_str() {
-    return this.#value;
+    return this.value.toString();
   }
 }
 
@@ -79,4 +95,14 @@ class MalNil {
   }
 }
 
-module.exports = { MalList, MalNil, MalValue, MalVector, MalMap, MalQuote, MalBool};
+module.exports = {
+  MalList,
+  MalNil,
+  MalValue,
+  MalVector,
+  MalMap,
+  MalQuote,
+  MalBool,
+  MalSymbol,
+  MalEnclosures
+};

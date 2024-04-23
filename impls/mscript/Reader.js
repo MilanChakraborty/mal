@@ -6,6 +6,7 @@ const {
   MalMap,
   MalQuote,
   MalBool,
+  MalSymbol,
 } = require("./types");
 
 class Reader {
@@ -42,13 +43,15 @@ const read_seq = (reader, endSeq) => {
 
 const read_atom = (reader) => {
   const token = reader.peek();
-  switch (token) {
-    case "nil":
+  switch (true) {
+    case token === "nil":
       return new MalNil();
-    case "false":
+    case token === "false":
       return new MalBool(false);
-    case "true":
+    case token === "true":
       return new MalBool(true);
+    case /^[\Wa-zA-Z]+$/.test(token):
+      return new MalSymbol(token);
     default:
       return new MalValue(token);
   }
