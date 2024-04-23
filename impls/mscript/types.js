@@ -10,18 +10,18 @@ class MalEnclosures {
   }
 }
 
-class MalQuote {
-  #form;
-  constructor(form) {
-    this.#form = form;
+class MalBool {
+  #value;
+  constructor(value) {
+    this.#value = value;
   }
 
   pr_str() {
-    return `(quote ${this.#form.pr_str()})`;
+    return this.#value.toString();
   }
 }
 
-class MalUnquote {
+class MalQuote {
   #form;
   constructor(form) {
     this.#form = form;
@@ -79,4 +79,4 @@ class MalNil {
   }
 }
 
-module.exports = { MalList, MalNil, MalValue, MalVector, MalMap, MalQuote };
+module.exports = { MalList, MalNil, MalValue, MalVector, MalMap, MalQuote, MalBool};

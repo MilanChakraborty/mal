@@ -13,7 +13,7 @@ const repl = () => {
     try {
       rep(answer);
     } catch (e) {
-      console.log(e);
+      console.error(e);
     }
     repl();
   });
