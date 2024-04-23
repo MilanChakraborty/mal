@@ -5,19 +5,8 @@ const {
   MalValue,
   MalList,
   MalSymbol,
-  MalVector,
-  MalMap,
   MalEnclosures,
 } = require("./types.js");
-
-const isEmptySeqOrMap = (ast) => {
-  return (
-    (ast instanceof MalList ||
-      ast instanceof MalVector ||
-      ast instanceof MalMap) &&
-    ast.isEmpty()
-  );
-};
 
 const eval_ast = (ast, env) => {
   switch (true) {
