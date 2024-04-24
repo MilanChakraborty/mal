@@ -12,6 +12,7 @@ const {
   MalNil,
   MalBool,
   MalFunction,
+  MalVector,
 } = require("./types.js");
 
 const addBinding = (symbol, value, env) => {
@@ -21,14 +22,14 @@ const addBinding = (symbol, value, env) => {
 };
 
 const handleDef = (ast, env) => {
-  const [_, symbol, val] = ast.args;
+  const [_, symbol, val] = ast.value;
   return addBinding(symbol, val, env);
 };
 
 const handleLet = (ast, env) => {
   const newEnv = new Env(env);
-  const [_, bindings, body] = ast.args;
-  lo.chunk(bindings.args, 2).forEach(([symbol, value]) =>
+  const [_, bindings, body] = ast.value;
+  lo.chunk(bindings.value, 2).forEach(([symbol, value]) =>
     addBinding(symbol, value, newEnv)
   );
 
@@ -36,12 +37,12 @@ const handleLet = (ast, env) => {
 };
 
 const handleDo = (ast, env) => {
-  [_, ...statements] = ast.args;
+  [_, ...statements] = ast.value;
   return statements.map((a) => EVAL(a, env)).at(-1);
 };
 
 const handleIf = (ast, env) => {
-  const [_, test, then, otherwise] = ast.args;
+  const [_, test, then, otherwise] = ast.value;
   if (EVAL(test, env).value) return EVAL(then, env);
   if (!otherwise) return new MalNil();
 
@@ -49,11 +50,13 @@ const handleIf = (ast, env) => {
 };
 
 const handleFunction = (ast, env) => {
-  const [_, binds, body] = ast.args;
-  const newEnv = env.createEnvWithBinds(binds.args.map((a) => a.value));
+  const [_, binds, body] = ast.value;
+  const newEnv = env.createEnvWithBinds(binds.value.map((a) => a.value));
 
   const fnReference = (...args) => {
     newEnv.addMappingsForBinds(args);
+    console.log(args);
+    console.log(newEnv);
     return EVAL(body, newEnv);
   };
 
@@ -69,11 +72,22 @@ const specialForms = {
   "fn*": handleFunction,
 };
 
-const isSpecialForm = (ast) => specialForms[ast.args.at(0).value];
+const isSpecialForm = (ast) => specialForms[ast.value.at(0).value];
 
 const handleSpecialForm = (ast, env) => {
-  const specialFormHandler = specialForms[ast.args.at(0).value];
+  const specialFormHandler = specialForms[ast.value.at(0).value];
   return specialFormHandler(ast, env);
+};
+
+const wrapInType = (value) => {
+  switch (true) {
+    case typeof value === "function":
+      return new MalFunction(value);
+    case typeof value === "number":
+      return new MalValue(value);
+    default:
+      return value;
+  }
 };
 
 const eval_ast = (ast, env) => {
@@ -81,20 +95,15 @@ const eval_ast = (ast, env) => {
     case ast instanceof MalSymbol:
       const value = env.get(ast.value);
       if (!value) return ast;
-      return typeof value === "function"
-        ? new MalFunction(value)
-        : new MalValue(value);
+      return wrapInType(value);
 
     case ast instanceof MalList && !ast.isEmpty():
       if (isSpecialForm(ast)) return handleSpecialForm(ast, env);
-      const [fn, ...args] = ast.args.map((e) => EVAL(e, env));
-      return fn.value.apply(
-        null,
-        args.map((a) => a.value)
-      );
+      const [fn, ...args] = ast.value.map((e) => EVAL(e, env));
+      return fn.value.apply(null, args);
 
     case ast instanceof MalEnclosures:
-      ast.args = ast.args.map((a) => EVAL(a, env));
+      ast.value = ast.value.map((a) => EVAL(a, env));
       return ast;
 
     default:

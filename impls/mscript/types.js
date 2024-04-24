@@ -1,15 +1,15 @@
 class MalEnclosures {
-  args;
+  value;
   constructor(args) {
-    this.args = args;
+    this.value = args;
   }
 
   isEmpty() {
-    return this.args.length === 0;
+    return this.value.length === 0;
   }
 
   pr_str(start, end) {
-    const elements = [...this.args].map((t) => t.pr_str()).join(" ");
+    const elements = [...this.value].map((t) => t.pr_str()).join(" ");
     return `${start}${elements}${end}`;
   }
 }
