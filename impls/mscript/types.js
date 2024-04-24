@@ -33,7 +33,7 @@ class MalSymbol extends MalType {
 
 class MalBool extends MalType {
   constructor(value) {
-    super(value);
+    super(value === "true");
   }
 }
 
@@ -107,6 +107,10 @@ class MalKeyword extends MalType {
 }
 
 class MalNil {
+  value;
+  constructor() {
+    this.value = false;
+  }
   pr_str() {
     return "nil";
   }

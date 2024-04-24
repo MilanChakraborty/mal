@@ -34,7 +34,46 @@ const handleLet = (ast, env) => {
   return !body ? new MalNil() : EVAL(body, newEnv);
 };
 
-const isFunc = (fnName, ast) => ast.args.at(0).value === fnName;
+const handleDo = (ast, env) => {
+  [_, ...statements] = ast.args;
+  return statements.map((a) => EVAL(a, env)).at(-1);
+};
+
+const handleIf = (ast, env) => {
+  const [_, test, then, otherwise] = ast.args;
+  if (EVAL(test, env).value) return EVAL(then, env);
+  if (!otherwise) return new MalNil();
+
+  return EVAL(otherwise, env);
+};
+
+const handleFunction = (ast, env) => {
+  const [_, binds, body] = ast.args;
+  const newEnv = env.createEnvWithBinds(binds.args.map((a) => a.value));
+
+  const fnReference = (...args) => {
+    newEnv.addMappingsForBinds(args);
+    return EVAL(body, newEnv);
+  };
+  
+  return new MalFunction(fnReference);
+};
+
+const specialForms = {
+  "def!": handleDef,
+  "let*": handleLet,
+  do: handleDo,
+  DO: handleDo,
+  if: handleIf,
+  "fn*": handleFunction,
+};
+
+const isSpecialForm = (ast) => specialForms[ast.args.at(0).value];
+
+const handleSpecialForm = (ast, env) => {
+  const specialFormHandler = specialForms[ast.args.at(0).value];
+  return specialFormHandler(ast, env);
+};
 
 const eval_ast = (ast, env) => {
   switch (true) {
@@ -46,8 +85,7 @@ const eval_ast = (ast, env) => {
         : new MalValue(value);
 
     case ast instanceof MalList && !ast.isEmpty():
-      if (isFunc("def!", ast)) return handleDef(ast, env);
-      if (isFunc("let*", ast)) return handleLet(ast, env);
+      if (isSpecialForm(ast)) return handleSpecialForm(ast, env);
       const [fn, ...args] = ast.args.map((e) => EVAL(e, env));
       return fn.value.apply(
         null,
@@ -73,10 +111,10 @@ const createGlobalEnvironment = () => {
   env.setBinding("-", (...args) => new MalValue(args.reduce((a, b) => a - b)));
   env.setBinding("*", (...args) => new MalValue(args.reduce((a, b) => a * b)));
   env.setBinding("/", (...args) => new MalValue(args.reduce((a, b) => a / b)));
-  env.setBinding("<", (a, b) => new MalBool(a < b));
-  env.setBinding("<=", (a, b) => new MalBool(a <= b));
-  env.setBinding(">", (a, b) => new MalBool(a > b));
-  env.setBinding(">=", (a, b) => new MalBool(a >= b));
+  env.setBinding("<", (a, b) => new MalBool((a < b).toString()));
+  env.setBinding("<=", (a, b) => new MalBool((a <= b).toString()));
+  env.setBinding(">", (a, b) => new MalBool((a > b).toString()));
+  env.setBinding(">=", (a, b) => new MalBool((a >= b).toString()));
 
   return env;
 };
