@@ -3,6 +3,7 @@ const { read_str } = require("./Reader.js");
 const { pr_str } = require("./printer.js");
 const { Env } = require("./env.js");
 const lo = require("lodash");
+const core = require("./core.js");
 const {
   MalValue,
   MalList,
@@ -55,7 +56,7 @@ const handleFunction = (ast, env) => {
     newEnv.addMappingsForBinds(args);
     return EVAL(body, newEnv);
   };
-  
+
   return new MalFunction(fnReference);
 };
 
@@ -107,14 +108,9 @@ const PRINT = (str) => pr_str(str);
 
 const createGlobalEnvironment = () => {
   const env = new Env();
-  env.setBinding("+", (...args) => new MalValue(args.reduce((a, b) => a + b)));
-  env.setBinding("-", (...args) => new MalValue(args.reduce((a, b) => a - b)));
-  env.setBinding("*", (...args) => new MalValue(args.reduce((a, b) => a * b)));
-  env.setBinding("/", (...args) => new MalValue(args.reduce((a, b) => a / b)));
-  env.setBinding("<", (a, b) => new MalBool((a < b).toString()));
-  env.setBinding("<=", (a, b) => new MalBool((a <= b).toString()));
-  env.setBinding(">", (a, b) => new MalBool((a > b).toString()));
-  env.setBinding(">=", (a, b) => new MalBool((a >= b).toString()));
+  Object.entries(core.ns).forEach(([symbol, value]) => {
+    env.setBinding(symbol, value);
+  });
 
   return env;
 };
