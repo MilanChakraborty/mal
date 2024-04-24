@@ -3,7 +3,7 @@ class Env {
   bindings;
   constructor(outer) {
     this.#outerEnvironment = outer;
-    this.bindings = {...outer?.bindings} || {};
+    this.bindings = { ...outer?.bindings } || {};
   }
 
   setBinding(symbol, value) {
@@ -11,8 +11,7 @@ class Env {
   }
 
   find(symbol) {
-    if (this.bindings[symbol]) return this;
-    return this.#outerEnvironment?.find(symbol);
+    return this.bindings[symbol] ? this : this.#outerEnvironment?.find(symbol);
   }
 
   get(symbol) {
