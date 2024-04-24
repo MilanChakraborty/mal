@@ -10,9 +10,7 @@ const {
   MalSymbol,
   MalEnclosures,
   MalNil,
-  MalBool,
   MalFunction,
-  MalVector,
 } = require("./types.js");
 
 const addBinding = (symbol, value, env) => {
@@ -43,7 +41,7 @@ const handleDo = (ast, env) => {
 
 const handleIf = (ast, env) => {
   const [_, test, then, otherwise] = ast.value;
-  if (EVAL(test, env).value) return EVAL(then, env);
+  if (EVAL(test, env).value !== false) return EVAL(then, env);
   if (!otherwise) return new MalNil();
 
   return EVAL(otherwise, env);
@@ -55,8 +53,6 @@ const handleFunction = (ast, env) => {
 
   const fnReference = (...args) => {
     newEnv.addMappingsForBinds(args);
-    console.log(args);
-    console.log(newEnv);
     return EVAL(body, newEnv);
   };
 
@@ -67,7 +63,6 @@ const specialForms = {
   "def!": handleDef,
   "let*": handleLet,
   do: handleDo,
-  DO: handleDo,
   if: handleIf,
   "fn*": handleFunction,
 };
@@ -127,6 +122,7 @@ const createGlobalEnvironment = () => {
 const rep = (str, env) => PRINT(EVAL(READ(str), env));
 const globalEnv = createGlobalEnvironment();
 
+rep("(def! not (fn* (a) (if a false true)))", globalEnv);
 const repl = () => {
   rl.question("user> ", (answer) => {
     try {
