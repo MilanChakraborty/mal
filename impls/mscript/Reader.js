@@ -7,6 +7,8 @@ const {
   MalQuote,
   MalBool,
   MalSymbol,
+  MalString,
+  MalKeyword,
 } = require("./types");
 
 class Reader {
@@ -50,6 +52,10 @@ const read_atom = (reader) => {
       return new MalBool(false);
     case token === "true":
       return new MalBool(true);
+    case /^".*"/.test(token):
+      return new MalString(token);
+    case /^:/.test(token):
+      return new MalKeyword(token);
     case /^[\Wa-zA-Z]+$/.test(token):
       return new MalSymbol(token);
     default:

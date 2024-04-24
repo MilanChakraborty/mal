@@ -78,14 +78,31 @@ class MalMap extends MalEnclosures {
   }
 }
 
-class MalValue {
-  value;
+class MalValue extends MalType {
   constructor(value) {
-    this.value = +value;
+    super(+value);
+  }
+}
+
+class MalFunction extends MalType {
+  constructor(value) {
+    super(value);
   }
 
   pr_str() {
-    return this.value.toString();
+    return "#<function>";
+  }
+}
+
+class MalString extends MalType {
+  constructor(value) {
+    super(value);
+  }
+}
+
+class MalKeyword extends MalType {
+  constructor(value) {
+    super(value);
   }
 }
 
@@ -104,5 +121,8 @@ module.exports = {
   MalQuote,
   MalBool,
   MalSymbol,
-  MalEnclosures
+  MalEnclosures,
+  MalFunction,
+  MalString,
+  MalKeyword,
 };

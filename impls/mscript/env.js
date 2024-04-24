@@ -1,22 +1,22 @@
 class Env {
   #outerEnvironment;
-  bindings;
+  data;
   constructor(outer) {
     this.#outerEnvironment = outer;
-    this.bindings = { ...outer?.bindings } || {};
+    this.data = { ...outer?.data } || {};
   }
 
   setBinding(symbol, value) {
-    this.bindings[symbol] = value;
+    this.data[symbol] = value;
   }
 
   find(symbol) {
-    return this.bindings[symbol] ? this : this.#outerEnvironment?.find(symbol);
+    return this.data[symbol] ? this : this.#outerEnvironment?.find(symbol);
   }
 
   get(symbol) {
     const env = this.find(symbol);
-    const value = env?.bindings[symbol];
+    const value = env?.data[symbol];
     if (value === undefined) throw new Error(symbol + " not found");
 
     return value;
