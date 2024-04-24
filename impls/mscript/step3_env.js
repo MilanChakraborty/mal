@@ -3,7 +3,13 @@ const { read_str } = require("./Reader.js");
 const { pr_str } = require("./printer.js");
 const { Env } = require("./env.js");
 const lo = require("lodash");
-const { MalValue, MalList, MalSymbol, MalEnclosures } = require("./types.js");
+const {
+  MalValue,
+  MalList,
+  MalSymbol,
+  MalEnclosures,
+  MalNil,
+} = require("./types.js");
 
 const addBinding = (symbol, value, env) => {
   const val = EVAL(value, env);
@@ -23,7 +29,7 @@ const handleLet = (ast, env) => {
     addBinding(symbol, value, newEnv)
   );
 
-  return EVAL(body, newEnv);
+  return !body ? new MalNil() : EVAL(body, newEnv);
 };
 
 const isFunc = (fnName, ast) => ast.args.at(0).value === fnName;
