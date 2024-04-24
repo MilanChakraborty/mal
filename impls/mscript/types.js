@@ -12,6 +12,14 @@ class MalEnclosures {
     const elements = [...this.value].map((t) => t.pr_str()).join(" ");
     return `${start}${elements}${end}`;
   }
+
+  equals(other) {
+    return (
+      other instanceof MalEnclosures &&
+      this.value.length === other.value.length &&
+      this.value.every((value, index) => value.equals(other.value[index]))
+    );
+  }
 }
 
 class MalType {
@@ -22,6 +30,10 @@ class MalType {
 
   pr_str() {
     return this.value.toString();
+  }
+
+  equals(other) {
+    return this.value === other.value;
   }
 }
 
@@ -111,8 +123,13 @@ class MalNil {
   constructor() {
     this.value = false;
   }
+
   pr_str() {
     return "nil";
+  }
+
+  equals(other) {
+    return other instanceof MalNil;
   }
 }
 

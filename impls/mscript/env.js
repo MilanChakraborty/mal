@@ -32,17 +32,6 @@ class Env {
 
     return value;
   }
-
-  createEnvWithBinds(binds) {
-    return new Env(this, binds);
-  }
-
-  addMappingsForBinds(values) {
-    for (const index in this.#binds) {
-      const bind = this.#binds[index];
-      this.data[bind] = values[index];
-    }
-  }
 }
 
 module.exports = { Env };
