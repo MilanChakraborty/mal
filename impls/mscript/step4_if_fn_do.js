@@ -49,10 +49,13 @@ const handleIf = (ast, env) => {
 
 const handleFunction = (ast, env) => {
   const [_, binds, body] = ast.value;
-  const newEnv = env.createEnvWithBinds(binds.value.map((a) => a.value));
 
   const fnReference = (...args) => {
-    newEnv.addMappingsForBinds(args);
+    const newEnv = new Env(
+      env,
+      binds.value.map((a) => a.value),
+      args
+    );
     return EVAL(body, newEnv);
   };
 

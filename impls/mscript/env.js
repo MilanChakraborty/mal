@@ -1,11 +1,20 @@
 class Env {
   #outerEnvironment;
   data;
-  binds;
-  constructor(outer, binds) {
+  #binds;
+  #exprs;
+  constructor(outer, binds, exprs) {
     this.#outerEnvironment = outer;
     this.data = { ...outer?.data } || {};
-    this.binds = binds || [];
+    this.#binds = binds || [];
+    this.#exprs = exprs || [];
+    this.#addBindings();
+  }
+
+  #addBindings() {
+    for (const index in this.#binds) {
+      this.data[this.#binds[index]] = this.#exprs[index];
+    }
   }
 
   setBinding(symbol, value) {
@@ -29,8 +38,8 @@ class Env {
   }
 
   addMappingsForBinds(values) {
-    for (const index in this.binds) {
-      const bind = this.binds[index];
+    for (const index in this.#binds) {
+      const bind = this.#binds[index];
       this.data[bind] = values[index];
     }
   }
