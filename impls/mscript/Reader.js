@@ -56,7 +56,7 @@ const read_atom = (reader) => {
       return new MalString(token);
     case /^:/.test(token):
       return new MalKeyword(token);
-    case /^[\Wa-zA-Z]+.*$/.test(token):
+    case /^(?!-)[\Wa-zA-Z]+.*$/.test(token):
       return new MalSymbol(token);
     default:
       return new MalValue(token);
