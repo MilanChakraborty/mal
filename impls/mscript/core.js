@@ -31,7 +31,7 @@ const ns = {
   count: (a) => new MalValue(a instanceof MalNil ? 0 : a.value.length),
   "=": (...args) => new MalBool(equals(args)),
   prn,
-  println
+  println,
 };
 
 module.exports = { ns };

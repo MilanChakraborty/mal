@@ -1,3 +1,5 @@
+const { MalList } = require("./types");
+
 class Env {
   #outerEnvironment;
   data;
@@ -11,9 +13,22 @@ class Env {
     this.#addBindings();
   }
 
+  #isVariadic(bind) {
+    return bind === "&";
+  }
+
   #addBindings() {
     for (const index in this.#binds) {
-      this.data[this.#binds[index]] = this.#exprs[index];
+      const bind = this.#binds[index];
+
+      if (this.#isVariadic(bind)) {
+        this.data[this.#binds[+index + 1]] = new MalList(
+          this.#exprs.slice(+index)
+        );
+        break;
+      }
+
+      this.data[bind] = this.#exprs[index];
     }
   }
 

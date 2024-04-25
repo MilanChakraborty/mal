@@ -24,14 +24,20 @@ const handleDef = (ast, env) => {
   return addBinding(symbol, val, env);
 };
 
+const wrapInDoForm = (body) => {
+  const doSymbol = new MalSymbol("do");
+  return new MalList([doSymbol, ...body]);
+};
+
 const handleLet = (ast, env) => {
   const newEnv = new Env(env);
-  const [_, bindings, body] = ast.value;
+  const [_, bindings, ...body] = ast.value;
   lo.chunk(bindings.value, 2).forEach(([symbol, value]) =>
     addBinding(symbol, value, newEnv)
   );
 
-  return !body ? new MalNil() : EVAL(body, newEnv);
+  const doForm = wrapInDoForm(body);
+  return body.length === 0 ? new MalNil() : EVAL(doForm, newEnv);
 };
 
 const handleDo = (ast, env) => {
@@ -48,7 +54,7 @@ const handleIf = (ast, env) => {
 };
 
 const handleFunction = (ast, env) => {
-  const [_, binds, body] = ast.value;
+  const [_, binds, ...body] = ast.value;
 
   const fnReference = (...args) => {
     const newEnv = new Env(
@@ -56,7 +62,7 @@ const handleFunction = (ast, env) => {
       binds.value.map((a) => a.value),
       args
     );
-    return EVAL(body, newEnv);
+    return EVAL(wrapInDoForm(body), newEnv);
   };
 
   return new MalFunction(fnReference);
@@ -113,11 +119,15 @@ const READ = (str) => read_str(str);
 const EVAL = (ast, env) => eval_ast(ast, env);
 const PRINT = (str) => pr_str(str);
 
-const createGlobalEnvironment = () => {
-  const env = new Env();
-  Object.entries(core.ns).forEach(([symbol, value]) => {
+const loadLib = (nameSpace, env) => {
+  Object.entries(nameSpace.ns).forEach(([symbol, value]) => {
     env.setBinding(symbol, value);
   });
+};
+
+const createGlobalEnvironment = () => {
+  const env = new Env();
+  loadLib(core, env);
 
   return env;
 };
