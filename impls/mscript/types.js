@@ -28,8 +28,10 @@ class MalType {
     this.value = value;
   }
 
-  pr_str() {
-    return this.value.toString();
+  pr_str(print_readably) {
+    return print_readably === false
+      ? this.value.slice(1, -1)
+      : this.value.toString();
   }
 
   equals(other) {
@@ -109,6 +111,10 @@ class MalFunction extends MalType {
 class MalString extends MalType {
   constructor(value) {
     super(value);
+  }
+
+  pr_str(print_readably) {
+    return super.pr_str(print_readably);
   }
 }
 
