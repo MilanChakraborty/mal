@@ -46,7 +46,7 @@ const read_seq = (reader, endSeq) => {
 const read_atom = (reader) => {
   const token = reader.peek();
   switch (true) {
-    case token === "nil":
+    case token === "nil" || token === undefined:
       return new MalNil();
     case token === "false":
       return new MalBool(false);
@@ -56,10 +56,10 @@ const read_atom = (reader) => {
       return new MalString(token);
     case /^:/.test(token):
       return new MalKeyword(token);
-    case /^(?!-)[\Wa-zA-Z]+.*$/.test(token):
-      return new MalSymbol(token);
-    default:
+    case /^-?[0-9][0-9.]*$/.test(token):
       return new MalValue(token);
+    case /^[\Wa-zA-Z]+.*$/.test(token):
+      return new MalSymbol(token);
   }
 };
 
