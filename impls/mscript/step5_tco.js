@@ -11,6 +11,7 @@ const {
   MalEnclosures,
   MalNil,
   MalFunction,
+  MalCoreFunction,
 } = require("./types.js");
 
 const addBinding = (symbol, value, env) => {
@@ -25,8 +26,7 @@ const handleDef = (ast, env) => {
 };
 
 const wrapInDoForm = (body) => {
-  const doSymbol = new MalSymbol("do");
-  return new MalList([doSymbol, ...body]);
+  return new MalList([new MalSymbol("do")].concat(body));
 };
 
 const handleLet = (ast, env) => {
@@ -35,57 +35,38 @@ const handleLet = (ast, env) => {
   lo.chunk(bindings.value, 2).forEach(([symbol, value]) =>
     addBinding(symbol, value, newEnv)
   );
-
-  return body.length === 0 ? new MalNil() : EVAL(wrapInDoForm(body), newEnv);
+  const newAst = body.length === 0 ? new MalNil() : wrapInDoForm(body);
+  return { newAst, newEnv };
 };
 
 const handleDo = (ast, env) => {
-  [_, ...statements] = ast.value;
-  return statements.map((a) => EVAL(a, env)).at(-1);
+  [, ...statements] = ast.value;
+  statements.slice(0, -1).forEach((statement) => EVAL(statement, env));
+  return statements.at(-1);
 };
 
 const handleIf = (ast, env) => {
-  const [_, test, then, otherwise] = ast.value;
-  if (EVAL(test, env).value !== false) return EVAL(then, env);
+  const [, test, then, otherwise] = ast.value;
+  if (EVAL(test, env).value !== false) return then;
   if (!otherwise) return new MalNil();
 
-  return EVAL(otherwise, env);
+  return otherwise;
 };
 
 const handleFunction = (ast, env) => {
-  const [_, binds, ...body] = ast.value;
+  const [, binds, ...body] = ast.value;
 
-  const fnReference = (...args) => {
-    const newEnv = new Env(
-      env,
-      binds.value.map((a) => a.value),
-      args
-    );
-    return EVAL(wrapInDoForm(body), newEnv);
-  };
-
-  return new MalFunction(fnReference);
-};
-
-const specialForms = {
-  "def!": handleDef,
-  "let*": handleLet,
-  do: handleDo,
-  if: handleIf,
-  "fn*": handleFunction,
-};
-
-const isSpecialForm = (ast) => specialForms[ast.value.at(0).value];
-
-const handleSpecialForm = (ast, env) => {
-  const specialFormHandler = specialForms[ast.value.at(0).value];
-  return specialFormHandler(ast, env);
+  return new MalFunction(
+    wrapInDoForm(body),
+    env,
+    binds.value.map((a) => a.value)
+  );
 };
 
 const wrapInType = (value) => {
   switch (true) {
     case typeof value === "function":
-      return new MalFunction(value);
+      return new MalCoreFunction(value);
     case typeof value === "number":
       return new MalValue(value);
     default:
@@ -100,11 +81,6 @@ const eval_ast = (ast, env) => {
       if (!value) return ast;
       return wrapInType(value);
 
-    case ast instanceof MalList && !ast.isEmpty():
-      if (isSpecialForm(ast)) return handleSpecialForm(ast, env);
-      const [fn, ...args] = ast.value.map((e) => EVAL(e, env));
-      return fn.value.apply(null, args);
-
     case ast instanceof MalEnclosures:
       ast.value = ast.value.map((a) => EVAL(a, env));
       return ast;
@@ -115,7 +91,51 @@ const eval_ast = (ast, env) => {
 };
 
 const READ = (str) => read_str(str);
-const EVAL = (ast, env) => eval_ast(ast, env);
+
+const EVAL = (ast, env) => {
+  while (true) {
+    if (!(ast instanceof MalList)) return eval_ast(ast, env);
+    if (ast.isEmpty()) return ast;
+
+    switch (ast.value[0].value) {
+      case "def!":
+        return handleDef(ast, env);
+
+      case "let*": {
+        const { newAst, newEnv } = handleLet(ast, env);
+        env = newEnv;
+        ast = newAst;
+        break;
+      }
+
+      case "do": {
+        ast = handleDo(ast, env);
+        break;
+      }
+
+      case "if": {
+        ast = handleIf(ast, env);
+        break;
+      }
+
+      case "fn*": {
+        return handleFunction(ast, env);
+      }
+
+      default: {
+        const [fn, ...args] = ast.value.map((e) => EVAL(e, env));
+
+        if (fn instanceof MalFunction) {
+          ast = fn.body;
+          env = new Env(fn.env, fn.binds, args);
+          break;
+        }
+
+        return fn.value.apply(null, args);
+      }
+    }
+  }
+};
 const PRINT = (str) => pr_str(str);
 
 const loadLib = (nameSpace, env) => {

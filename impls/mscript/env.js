@@ -41,8 +41,7 @@ class Env {
   }
 
   get(symbol) {
-    const env = this.find(symbol);
-    const value = env?.data[symbol];
+    const value = this.find(symbol)?.data[symbol];
     if (value === undefined) throw new Error(symbol + " not found");
 
     return value;

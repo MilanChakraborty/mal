@@ -98,7 +98,20 @@ class MalValue extends MalType {
   }
 }
 
-class MalFunction extends MalType {
+class MalFunction {
+  constructor(body, env, binds) {
+    this.body = body;
+    this.env = env;
+    this.binds = binds;
+    this.value = this;
+  }
+
+  pr_str() {
+    return "#<function>";
+  }
+}
+
+class MalCoreFunction extends MalType {
   constructor(value) {
     super(value);
   }
@@ -152,4 +165,5 @@ module.exports = {
   MalFunction,
   MalString,
   MalKeyword,
+  MalCoreFunction,
 };
