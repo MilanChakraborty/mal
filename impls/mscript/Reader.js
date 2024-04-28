@@ -87,9 +87,13 @@ const tokenize = (str) => {
   return [...str.matchAll(regex)].slice(0, -1).map((mtch) => mtch.at(1));
 };
 
+const removeComments = (tokens) => {
+  return tokens.filter((token) => !token.startsWith(";"));
+};
+
 const read_str = (str) => {
   const tokens = tokenize(str);
-  const reader = new Reader(tokens);
+  const reader = new Reader(removeComments(tokens));
   return read_form(reader);
 };
 
